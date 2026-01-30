@@ -14,8 +14,10 @@ import ReactFlow, {
 import 'reactflow/dist/style.css'
 
 const nodeTypes = {
-  container: ({ data }) => (
-    <div className="px-4 py-3 shadow-lg rounded-lg bg-white border-2 border-gray-300 min-w-[180px] relative" style={{ cursor: 'grab' }}>
+  container: ({ data, selected }) => (
+    <div className={`px-4 py-3 shadow-lg rounded-lg bg-white border-2 min-w-[180px] relative ${
+      selected ? 'border-blue-600 ring-2 ring-blue-300' : 'border-gray-300'
+    }`} style={{ cursor: 'grab' }}>
       <Handle type="source" position={Position.Right} id="source" className="w-3 h-3 bg-blue-500 rounded-full border-2 border-white" />
       <Handle type="target" position={Position.Left} id="target" className="w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
       <div className="flex items-center gap-2 pointer-events-none">
@@ -29,11 +31,17 @@ const nodeTypes = {
   ),
 }
 
-export default function FlowCanvas({ onNodesChange, onEdgesChange }) {
+export default function FlowCanvas({ onNodesChange, onEdgesChange, onNodeClick }) {
   const [nodes, setNodes, onNodesChangeInternal] = useNodesState([])
   const [edges, setEdges, onEdgesChangeInternal] = useEdgesState([])
 
   const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges])
+
+  const handleNodeClick = useCallback((event, node) => {
+    if (onNodeClick) {
+      onNodeClick(node)
+    }
+  }, [onNodeClick])
 
   const addContainer = useCallback((type) => {
     const newNode = {
@@ -70,6 +78,7 @@ export default function FlowCanvas({ onNodesChange, onEdgesChange }) {
         onNodesChange={onNodesChangeInternal}
         onEdgesChange={onEdgesChangeInternal}
         onConnect={onConnect}
+        onNodeClick={handleNodeClick}
         nodeTypes={nodeTypes}
         fitView
       >
